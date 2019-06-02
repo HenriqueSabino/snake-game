@@ -10,6 +10,7 @@ public class Main extends PApplet {
     private Snake snake;
     private Plane plane;
     private int pixelSize = 30;
+    private int gameSpeed = 4;
     
     public static void main(String[] args) {
         
@@ -32,12 +33,32 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         
-        background(51);
-        
         plane = new Plane(new PVector(), new PVector(width / pixelSize, height / pixelSize));
         snake = new Snake(plane, plane.getWidth() / 2, plane.getHeight() / 2);
+        frameRate(30);
+    }
+    
+    @Override
+    public void draw() {
         
-        drawSnake(snake);
+        if (frameCount % gameSpeed == 0) {
+            background(51);
+            drawSnake(snake);
+            snake.update();
+        }
+    }
+    
+    @Override
+    public void keyPressed() {
+        if (keyCode == UP || key == 'w') {
+            snake.changeDir(new PVector(0, -1));
+        } else if (keyCode == DOWN || key == 's') {
+            snake.changeDir(new PVector(0, 1));
+        } else if (keyCode == LEFT || key == 'a') {
+            snake.changeDir(new PVector(-1, 0));
+        } else if (keyCode == RIGHT || key == 'd') {
+            snake.changeDir(new PVector(1, 0));
+        }
     }
     
     private void drawSnake(Snake snake) {
@@ -46,15 +67,7 @@ public class Main extends PApplet {
         fill(255);
         
         for (PVector part : snake.getParts()) {
-            println(part);
-        }
-        
-        for (PVector part : snake.getParts()) {
-            rect(part.x * (pixelSize - 1), part.y * (pixelSize - 1), (pixelSize - 1), (pixelSize - 1));
-        }
-        
-        for (PVector part : snake.getParts()) {
-            println(part);
+            rect(part.x * pixelSize, part.y * pixelSize, (pixelSize - 1), (pixelSize - 1));
         }
     }
 }

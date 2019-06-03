@@ -1,5 +1,6 @@
 package application;
 
+import entities.Food;
 import entities.Plane;
 import entities.Snake;
 import processing.core.PApplet;
@@ -8,6 +9,7 @@ import processing.core.PVector;
 public class Main extends PApplet {
     
     private Snake snake;
+    private Food food;
     private Plane plane;
     private int pixelSize = 30;
     private int gameSpeed = 4;
@@ -35,6 +37,7 @@ public class Main extends PApplet {
         
         plane = new Plane(new PVector(), new PVector(width / pixelSize, height / pixelSize));
         snake = new Snake(plane, plane.getWidth() / 2, plane.getHeight() / 2);
+        food = new Food(plane, snake);
         frameRate(30);
     }
     
@@ -43,6 +46,7 @@ public class Main extends PApplet {
         
         if (frameCount % gameSpeed == 0) {
             background(51);
+            drawFood(food);
             drawSnake(snake);
             snake.update();
         }
@@ -69,5 +73,15 @@ public class Main extends PApplet {
         for (PVector part : snake.getParts()) {
             rect(part.x * pixelSize, part.y * pixelSize, (pixelSize - 1), (pixelSize - 1));
         }
+    }
+    
+    private void drawFood(Food food) {
+        strokeWeight(1);
+        stroke(0);
+        fill(0xFFFF0000);
+        
+        
+        rect(food.getPos().x * pixelSize, food.getPos().y * pixelSize, (pixelSize - 1), (pixelSize - 1));
+        
     }
 }

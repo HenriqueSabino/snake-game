@@ -12,7 +12,7 @@ public class Main extends PApplet {
     private Food food;
     private Plane plane;
     private int pixelSize = 30;
-    private int gameSpeed = 4;
+    private int gameSpeed = 5;
     
     public static void main(String[] args) {
         
@@ -38,7 +38,6 @@ public class Main extends PApplet {
         plane = new Plane(new PVector(), new PVector(width / pixelSize, height / pixelSize));
         snake = new Snake(plane, plane.getWidth() / 2, plane.getHeight() / 2);
         food = new Food(plane, snake);
-        frameRate(30);
     }
     
     @Override
@@ -49,6 +48,7 @@ public class Main extends PApplet {
             drawFood(food);
             drawSnake(snake);
             snake.update();
+            food.check();
         }
     }
     
@@ -82,6 +82,5 @@ public class Main extends PApplet {
         
         
         rect(food.getPos().x * pixelSize, food.getPos().y * pixelSize, (pixelSize - 1), (pixelSize - 1));
-        
     }
 }

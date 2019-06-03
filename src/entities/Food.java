@@ -31,6 +31,14 @@ public class Food {
         }
     }
     
+    public void check() {
+        
+        if (snake.getParts().get(0).hashCode() == pos.hashCode()) {
+            snake.grow();
+            randomPos();
+        }
+    }
+    
     public PVector getPos() {
         return pos;
     }

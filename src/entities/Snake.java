@@ -7,10 +7,14 @@ import java.util.List;
 
 public class Snake {
     
+    boolean changedDir = false;
     private int size = 4;
     private List<PVector> parts = new ArrayList<>();
+    //nextDir is used to fix the issue of reversing the direction
+    //by changing to a valid direction quickly before the snake move,
+    //like: up, (left, down [in the "same" frame])
     private Plane screen;
-    private PVector dir;
+    private PVector dir, nextDir;
     
     public Snake(Plane screen, float posX, float posY) {
         
@@ -31,11 +35,24 @@ public class Snake {
     public void changeDir(PVector vector) {
         
         //Checking if the user is trying to go backwards
-        if (vector.copy().mult(-1).hashCode() != dir.hashCode())
-            dir = vector.copy();
+        if (vector.copy().mult(-1).hashCode() != dir.hashCode()) {
+            nextDir = vector.copy();
+            changedDir = true;
+        }
+    }
+    
+    private void confirmDir() {
+        //Checking if the user is trying to go backwards
+        if (nextDir.copy().mult(-1).hashCode() != dir.hashCode())
+            dir = nextDir.copy();
     }
     
     public void update() {
+        
+        if (changedDir) {
+            confirmDir();
+            changedDir = false;
+        }
         
         for (int i = parts.size() - 1; i >= 0; i--) {
             
@@ -48,6 +65,11 @@ public class Snake {
         }
     }
     
+    public void grow() {
+        size++;
+        parts.add(parts.get(0).copy());
+    }
+    
     public List<PVector> getParts() {
         
         List<PVector> copy = new ArrayList<>();
@@ -58,7 +80,9 @@ public class Snake {
         
         copy.forEach(p -> {
             p.x *= screen.getWidth();
+            p.x = (float) Math.round(p.x);
             p.y *= screen.getHeight();
+            p.y = (float) Math.round(p.y);
         });
         
         return copy;

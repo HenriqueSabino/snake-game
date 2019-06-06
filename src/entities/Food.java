@@ -19,17 +19,15 @@ public class Food {
     
     private void randomPos() {
         
-        float posX = (float) Math.floor((float) Math.random() * screen.getWidth());
-        float posY = (float) Math.floor((float) Math.random() * screen.getHeight());
+        float posX;
+        float posY;
+        
+        do {
+            posX = (float) Math.floor((float) Math.random() * screen.getWidth());
+            posY = (float) Math.floor((float) Math.random() * screen.getHeight());
+        } while (snake.getParts().indexOf(new PVector(posX, posY)) != -1);
         
         pos = new PVector(posX, posY);
-        
-        for (PVector part : snake.getParts()) {
-            if (part.x == pos.x && part.y == pos.y) {
-                randomPos();
-                break;
-            }
-        }
     }
     
     public void check() {

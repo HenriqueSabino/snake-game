@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Snake {
     
-    boolean changedDir = false;
+    private boolean changedDir = false;
     private int size = 4;
     private List<PVector> parts = new ArrayList<>();
     //nextDir is used to fix the issue of reversing the direction
@@ -91,9 +91,9 @@ public class Snake {
     }
     
     private void checkDeath(PVector head) {
-        //The loop starts at position 3 because it is impossible
-        //for the snake head to get to those positions
-        for (int i = 3; i < parts.size() - 1; i++) {
+        //The loop starts at position 4 because it is impossible
+        //for the snake head to get to position 3 positions
+        for (int i = 4; i < parts.size(); i++) {
             if (head.x == parts.get(i).x && head.y == parts.get(i).y)
                 dead = true;
         }

@@ -1,5 +1,6 @@
 package entities;
 
+import entities.screens.Plane;
 import processing.core.PVector;
 
 import java.util.ArrayList;
@@ -15,18 +16,21 @@ public class Snake {
     //like: up, (left, down [in the "same" frame])
     private Plane screen;
     private PVector dir, nextDir;
+    private MovementType movementType;
+    private boolean dead;
     
-    public Snake(Plane screen, float posX, float posY) {
+    public Snake(Plane screen, float posX, float posY, MovementType movementType) {
         
         this.screen = screen;
+        this.movementType = movementType;
+        dead = false;
         
-        //normalizing the snake position to [0, 1]
-        parts.add(new PVector(posX / screen.getWidth(), posY / screen.getHeight()));
+        parts.add(new PVector(posX, posY));
         
         for (int i = 1; i < size; i++) {
             
-            float x = (posX - i) / screen.getWidth();
-            parts.add(new PVector(x, posY / screen.getHeight()));
+            float x = posX - i;
+            parts.add(new PVector(x, posY));
         }
         
         dir = new PVector(1, 0);
@@ -48,19 +52,26 @@ public class Snake {
     }
     
     public void update() {
-        
         if (changedDir) {
             confirmDir();
             changedDir = false;
         }
         
-        for (int i = parts.size() - 1; i >= 0; i--) {
-            
-            if (i != 0) {
-                parts.set(i, parts.get(i - 1).copy());
-            } else {
-                parts.get(i).x += dir.x / screen.getWidth();
-                parts.get(i).y += dir.y / screen.getHeight();
+        //If the next movement kill the snake do not update the positions
+        //Will be refactored when the death by eating itself is implemented
+        dead = dead || (movementType == MovementType.WALLS && checkBoundaries(PVector.add(parts.get(0), dir)));
+        
+        if (!dead) {
+            for (int i = parts.size() - 1; i >= 0; i--) {
+                
+                if (i != 0) {
+                    parts.set(i, parts.get(i - 1).copy());
+                } else {
+                    parts.get(i).x += dir.x;
+                    parts.get(i).y += dir.y;
+                    if (movementType == MovementType.WRAP)
+                        wrap();
+                }
             }
         }
     }
@@ -68,6 +79,15 @@ public class Snake {
     public void grow() {
         size++;
         parts.add(parts.get(0).copy());
+    }
+    
+    private boolean checkBoundaries(PVector head) {
+        return head.x < 0 || head.x >= screen.getWidth() || head.y < 0 || head.y >= screen.getHeight();
+    }
+    
+    private void wrap() {
+        parts.get(0).x %= screen.getWidth();
+        parts.get(0).y %= screen.getHeight();
     }
     
     public List<PVector> getParts() {
@@ -78,13 +98,11 @@ public class Snake {
             copy.add(part.copy());
         }
         
-        copy.forEach(p -> {
-            p.x *= screen.getWidth();
-            p.x = (float) Math.round(p.x);
-            p.y *= screen.getHeight();
-            p.y = (float) Math.round(p.y);
-        });
-        
         return copy;
+    }
+    
+    public enum MovementType {
+        WRAP,
+        WALLS
     }
 }

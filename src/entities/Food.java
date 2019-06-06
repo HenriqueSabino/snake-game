@@ -1,5 +1,6 @@
 package entities;
 
+import entities.screens.Plane;
 import processing.core.PVector;
 
 public class Food {

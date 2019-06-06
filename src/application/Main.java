@@ -42,6 +42,11 @@ public class Main extends PApplet {
     @Override
     public void draw() {
         
+        if (snake.isDead()) {
+            snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, snake.getMovementType());
+            food = new Food(gameScreen, snake);
+        }
+        
         if (frameCount % gameSpeed == 0) {
             background(51);
             drawFood(food);

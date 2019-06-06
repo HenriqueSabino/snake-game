@@ -25,7 +25,7 @@ public class Food {
         pos = new PVector(posX, posY);
         
         for (PVector part : snake.getParts()) {
-            if (part.hashCode() == pos.hashCode()) {
+            if (part.x == pos.x && part.y == pos.y) {
                 randomPos();
                 break;
             }

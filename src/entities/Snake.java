@@ -39,7 +39,7 @@ public class Snake {
     public void changeDir(PVector vector) {
         
         //Checking if the user is trying to go backwards
-        if (vector.copy().mult(-1).hashCode() != dir.hashCode()) {
+        if (!(vector.copy().mult(-1).x == dir.x && vector.copy().mult(-1).y == dir.y)) {
             nextDir = vector.copy();
             changedDir = true;
         }
@@ -47,7 +47,7 @@ public class Snake {
     
     private void confirmDir() {
         //Checking if the user is trying to go backwards
-        if (nextDir.copy().mult(-1).hashCode() != dir.hashCode())
+        if (!(nextDir.copy().mult(-1).x == dir.x && nextDir.copy().mult(-1).y == dir.y))
             dir = nextDir.copy();
     }
     
@@ -57,9 +57,8 @@ public class Snake {
             changedDir = false;
         }
         
-        //If the next movement kill the snake do not update the positions
-        //Will be refactored when the death by eating itself is implemented
-        dead = dead || (movementType == MovementType.WALLS && checkBoundaries(PVector.add(parts.get(0), dir)));
+        //gets a deep copy of the list
+        List<PVector> temp = getParts();
         
         if (!dead) {
             for (int i = parts.size() - 1; i >= 0; i--) {
@@ -73,6 +72,12 @@ public class Snake {
                         wrap();
                 }
             }
+            
+            //If in the next position the snake is dead
+            //rollback the positions
+            checkDeath(parts.get(0));
+            dead = dead || (movementType == MovementType.WALLS && checkBoundaries(parts.get(0)));
+            parts = (dead) ? temp : parts;
         }
     }
     
@@ -83,6 +88,15 @@ public class Snake {
     
     private boolean checkBoundaries(PVector head) {
         return head.x < 0 || head.x >= screen.getWidth() || head.y < 0 || head.y >= screen.getHeight();
+    }
+    
+    private void checkDeath(PVector head) {
+        //The loop starts at position 3 because it is impossible
+        //for the snake head to get to those positions
+        for (int i = 3; i < parts.size() - 1; i++) {
+            if (head.x == parts.get(i).x && head.y == parts.get(i).y)
+                dead = true;
+        }
     }
     
     private void wrap() {
@@ -99,6 +113,14 @@ public class Snake {
         }
         
         return copy;
+    }
+    
+    public MovementType getMovementType() {
+        return movementType;
+    }
+    
+    public boolean isDead() {
+        return dead;
     }
     
     public enum MovementType {

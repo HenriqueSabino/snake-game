@@ -53,6 +53,20 @@ public final class Plane {
         height = Math.abs(points[1].y - points[0].y);
     }
     
+    public float getX(float x) {
+        if (parent != null)
+            return parent.getX(x * pixelSize + points[0].x);
+        else
+            return x * pixelSize + points[0].x;
+    }
+    
+    public float getY(float y) {
+        if (parent != null)
+            return parent.getY(y * pixelSize + points[0].y);
+        else
+            return y * pixelSize + points[0].y;
+    }
+    
     public float getWidth() {
         return width;
     }

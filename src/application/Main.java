@@ -11,7 +11,9 @@ public class Main extends PApplet {
     private Snake snake;
     private Food food;
     private Plane gameScreen, screen;
+    private int initSize;
     private int gameSpeed = 5;
+    private int score;
     
     public static void main(String[] args) {
         
@@ -27,16 +29,17 @@ public class Main extends PApplet {
     
     @Override
     public void settings() {
-        size(600, 600);
-        screen = new Plane(width, height);
+        size(500, 600);
+        screen = new Plane(new PVector(0, 100), new PVector(width, height));
     }
     
     @Override
     public void setup() {
         
-        gameScreen = new Plane(new PVector(), new PVector(20, 20), screen);
+        gameScreen = new Plane(new PVector(0, 0), new PVector(20, 20), screen);
         snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, Snake.MovementType.WALLS);
         food = new Food(gameScreen, snake);
+        initSize = snake.getParts().size();
     }
     
     @Override
@@ -49,11 +52,24 @@ public class Main extends PApplet {
         
         if (frameCount % gameSpeed == 0) {
             background(51);
+            
+            //drawing the text gap between the top and the playable screen
+            noStroke();
+            fill(0xFF555555);
+            rect(0, 0, screen.getWidth(), screen.getY(0));
+            
             drawFood(food);
             drawSnake(snake);
             snake.update();
             food.check();
+            
+            fill(255);
+            score = (snake.getParts().size() - initSize) * 10;
+            textSize(gameScreen.getPixelSize());
+            textAlign(LEFT, TOP);
+            text("Score: " + score, 0, 0);
         }
+        
     }
     
     @Override
@@ -74,15 +90,14 @@ public class Main extends PApplet {
         fill(255);
         
         for (PVector part : snake.getParts()) {
-            rect(part.x * gameScreen.getPixelSize(), part.y * gameScreen.getPixelSize(),
-                    gameScreen.getPixelSize(), gameScreen.getPixelSize());
+            rect(gameScreen.getX(part.x), gameScreen.getY(part.y), gameScreen.getPixelSize(), gameScreen.getPixelSize());
         }
     }
     
     private void drawFood(Food food) {
         noStroke();
         fill(0xFFFF0000);//red
-        rect(food.getPos().x * gameScreen.getPixelSize(), food.getPos().y * gameScreen.getPixelSize(),
+        rect(gameScreen.getX(food.getPos().x), gameScreen.getY(food.getPos().y),
                 gameScreen.getPixelSize(), gameScreen.getPixelSize());
     }
 }

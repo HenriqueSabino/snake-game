@@ -8,14 +8,16 @@ import java.util.List;
 
 public class Snake {
     
+    /*
+     *nextDir is used to fix the issue of reversing the direction
+     *by changing to a valid direction quickly before the snake move,
+     *like: up, (left, down [in the "same" frame])
+     */
+    protected Plane screen;
+    protected PVector dir, nextDir;
     private boolean changedDir = false;
     private int size = 4;
     private List<PVector> parts = new ArrayList<>();
-    //nextDir is used to fix the issue of reversing the direction
-    //by changing to a valid direction quickly before the snake move,
-    //like: up, (left, down [in the "same" frame])
-    private Plane screen;
-    private PVector dir, nextDir;
     private MovementType movementType;
     private boolean dead;
     

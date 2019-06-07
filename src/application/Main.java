@@ -13,7 +13,7 @@ public class Main extends PApplet {
     private Plane gameScreen, screen;
     private int initSize;
     private int gameSpeed = 5;
-    private int score;
+    private int score, highscore = 0;
     private boolean start = false;
     
     public static void main(String[] args) {
@@ -70,9 +70,14 @@ public class Main extends PApplet {
             
             fill(255);
             score = (snake.getParts().size() - initSize) * 10;
+            highscore = (score > highscore) ? score : highscore;
+            
             textSize(20);
+            
             textAlign(LEFT, TOP);
             text("Score: " + score, 5, 5);
+            text("HighScore: " + highscore, 5, 30);
+            
             textAlign(RIGHT, TOP);
             text("Enter to start/play", width - 5, 5);
             text("P to pause", width - 5, 30);
@@ -105,6 +110,8 @@ public class Main extends PApplet {
                         Snake.MovementType.WRAP);
                 food = new Food(gameScreen, snake);
             }
+            score = (snake.getParts().size() - initSize) * 10;
+            highscore = 0;
         }
     }
     

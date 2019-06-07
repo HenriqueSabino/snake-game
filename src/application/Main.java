@@ -14,6 +14,7 @@ public class Main extends PApplet {
     private int initSize;
     private int gameSpeed = 5;
     private int score;
+    private boolean start = false;
     
     public static void main(String[] args) {
         
@@ -58,18 +59,25 @@ public class Main extends PApplet {
             fill(0xFF555555);
             rect(0, 0, screen.getWidth(), screen.getY(0));
             
+            
+            food.check();
             drawFood(food);
             drawSnake(snake);
-            snake.update();
-            food.check();
+            
+            if (start) {
+                snake.update();
+            }
             
             fill(255);
             score = (snake.getParts().size() - initSize) * 10;
-            textSize(gameScreen.getPixelSize());
+            textSize(20);
             textAlign(LEFT, TOP);
-            text("Score: " + score, 0, 0);
+            text("Score: " + score, 5, 5);
+            textAlign(RIGHT, TOP);
+            text("Enter to start/play", width - 5, 5);
+            text("P to pause", width - 5, 30);
+            text("Mode (M) - " + snake.getMovementType(), width - 5, 55);
         }
-        
     }
     
     @Override
@@ -82,6 +90,21 @@ public class Main extends PApplet {
             snake.changeDir(new PVector(-1, 0));
         } else if (keyCode == RIGHT || key == 'd') {
             snake.changeDir(new PVector(1, 0));
+        } else if (keyCode == ENTER) {
+            start = true;
+        } else if (key == 'p' || key == 'P') {
+            start = false;
+        } else if ((key == 'm' || key == 'M') && !start) {
+            if (snake.getMovementType() == Snake.MovementType.WALLS) {
+                snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
+                        Snake.MovementType.WRAP);
+                
+                food = new Food(gameScreen, snake);
+            } else {
+                snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
+                        Snake.MovementType.WRAP);
+                food = new Food(gameScreen, snake);
+            }
         }
     }
     

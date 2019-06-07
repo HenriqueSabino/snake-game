@@ -100,8 +100,16 @@ public class Snake {
     }
     
     private void wrap() {
-        parts.get(0).x %= screen.getWidth();
-        parts.get(0).y %= screen.getHeight();
+        
+        if (parts.get(0).x >= 0)
+            parts.get(0).x %= screen.getWidth();
+        else
+            parts.get(0).x = screen.getWidth() - 1;
+        
+        if (parts.get(0).y >= 0)
+            parts.get(0).y %= screen.getHeight();
+        else
+            parts.get(0).y = screen.getHeight() - 1;
     }
     
     public List<PVector> getParts() {
@@ -117,6 +125,10 @@ public class Snake {
     
     public MovementType getMovementType() {
         return movementType;
+    }
+    
+    public void setMovementType(MovementType movementType) {
+        this.movementType = movementType;
     }
     
     public boolean isDead() {

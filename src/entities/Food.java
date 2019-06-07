@@ -32,7 +32,7 @@ public class Food {
     
     public void check() {
         
-        if (snake.getParts().get(0).hashCode() == pos.hashCode()) {
+        if (snake.getParts().get(0).x == pos.x && snake.getParts().get(0).y == pos.y) {
             snake.grow();
             randomPos();
         }

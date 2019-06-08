@@ -247,6 +247,31 @@ public class Snake extends entities.Snake {
         return dists;
     }
     
+    private void predict(Food food) {
+        double[] prediction = brain.predict(fov(food));
+        
+        int max = 0;
+        for (int i = 0; i < prediction.length; i++) {
+            if (prediction[i] > prediction[max])
+                max = i;
+        }
+        
+        switch (max) {
+            case 0:
+                changeDir(new PVector(1, 0));
+                break;
+            case 1:
+                changeDir(new PVector(0, -1));
+                break;
+            case 2:
+                changeDir(new PVector(-1, 0));
+                break;
+            case 3:
+                changeDir(new PVector(0, 1));
+                break;
+        }
+    }
+    
     private PVector intersection(float m, float b, float n, float c, boolean horizontal) {
         /*
          * the x coordinate of the intersection of two distinct lines described as

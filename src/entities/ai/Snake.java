@@ -46,7 +46,7 @@ public class Snake extends entities.Snake {
         
         PVector newDir = new PVector(dir.x, -dir.y);
         
-        int init = (int) Math.floor((newDir.heading() / 2 * Math.PI) / (Math.PI / 4));
+        int init = (int) Math.floor((newDir.heading() % (2 * Math.PI)) / (Math.PI / 4));
         
         /*
          * Above this comment is the math to rotate the rays with the snake
@@ -55,42 +55,45 @@ public class Snake extends entities.Snake {
          * down diagonal passing through snake's head: y = -x + pos.x + pos.y, so x = -y + pos.x + pos.y
          * NOTE: the diagonal calculation can be a little bit tricky because the Y is inverted on processing,
          *          I might change the code of the class Plane to fix that
+		 *
+		 * link to p5 simulation of this code with random points and user input of direction
+		 * https://editor.p5js.org/h.sabinocosta/full/hoyumx-5E
          */
         
         dists[init % 8] = 1 - pos.x;
         
         //Calculating diagonal 1
-        PVector interX = intersection(-1, pos.x + pos.y, 0, 1, true);
+        PVector interX = intersection(-1, pos.x + pos.y, 0, 0, true);
         PVector interY = intersection(-1, pos.x + pos.y, 0, 1, false);
         
-        dists[(1 + init) % 8] = (!(interX.x < 0)) ? PVector.dist(pos, interX) : PVector.dist(pos, interY);
+        dists[(1 + init) % 8] = (interX.x > 1) ? PVector.dist(pos, interY) : PVector.dist(pos, interX);
         //end of calculation
         
         dists[(2 + init) % 8] = pos.y;
         
         //Calculating diagonal 2
-        interX = intersection(1, -pos.x + pos.y, 0, 1, true);
+        interX = intersection(1, -pos.x + pos.y, 0, 0, true);
         interY = intersection(1, pos.x - pos.y, 0, 0, false);
         
-        dists[(3 + init) % 8] = (!(interX.x < 0)) ? PVector.dist(pos, interX) : PVector.dist(pos, interY);
+        dists[(3 + init) % 8] = (interX.x < 0) ? PVector.dist(pos, interY) : PVector.dist(pos, interX);
         //end of calculation
         
         dists[(4 + init) % 8] = pos.x;
         
         //Calculating diagonal 3
-        interX = intersection(-1, pos.x + pos.y, 0, 0, true);
+        interX = intersection(-1, pos.x + pos.y, 0, 1, true);
         interY = intersection(-1, pos.x + pos.y, 0, 0, false);
         
-        dists[(5 + init) % 8] = (!(interX.x < 0)) ? PVector.dist(pos, interX) : PVector.dist(pos, interY);
+        dists[(5 + init) % 8] = (interX.x < 0) ? PVector.dist(pos, interY) : PVector.dist(pos, interX);
         //end of calculation
         
         dists[(6 + init) % 8] = 1 - pos.y;
         
         //Calculating diagonal 4
-        interX = intersection(1, -pos.x + pos.y, 0, 0, true);
+        interX = intersection(1, -pos.x + pos.y, 0, 1, true);
         interY = intersection(1, pos.x - pos.y, 0, 1, false);
         
-        dists[(7 + init) % 8] = (!(interX.x < 0)) ? PVector.dist(pos, interX) : PVector.dist(pos, interY);
+        dists[(7 + init) % 8] = (interX.x > 1) ? PVector.dist(pos, interY) : PVector.dist(pos, interX);
         //end of calculation
         
         return dists;

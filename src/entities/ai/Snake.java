@@ -6,15 +6,43 @@ import io.github.henriquesabino.math.services.Function;
 import io.github.henriquesabino.neunet.ga.GANeuralNetwork;
 import processing.core.PVector;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Snake extends entities.Snake {
     
     private GANeuralNetwork brain;
+    private double fitness;
+    private int movesLeft, lifeTime = 0;
     
-    public Snake(Plane screen, float posX, float posY, MovementType movementType) {
+    public Snake(Plane screen, float posX, float posY, MovementType movementType, int movesLeft) {
         super(screen, posX, posY, movementType);
         brain = new GANeuralNetwork(24, new int[]{16}, 4, 0.1);
         brain.setActivationFunctionsForHiddenLayer(Function.RELU);
         brain.setActivationFunctionsForOutputLayer(Function.SOFTMAX);
+        this.movesLeft = movesLeft;
+    }
+    
+    public Snake(List<Snake> prevGen, float posX, float posY, int parentNum) {
+        super(prevGen.get(0).screen, posX, posY, prevGen.get(0).getMovementType());
+        
+        List<Snake> parents = new ArrayList<>();
+        
+        List<Snake> copyPrevGen = new ArrayList<>(prevGen);
+        
+        for (int i = 0; i < parentNum; i++) {
+            
+            Snake selected = poolSelection(copyPrevGen);
+            parents.add(selected);
+            //guarantees that it will select one Snake twice
+            copyPrevGen.remove(selected);
+        }
+        
+        List<GANeuralNetwork> brains = parents.stream().map(s -> s.brain).collect(Collectors.toList());
+        
+        //generates a brain based on the parents's brains
+        brain = new GANeuralNetwork(brains);
     }
     
     public void predict(Food food) {
@@ -159,5 +187,72 @@ public class Snake extends entities.Snake {
         }
         
         return dists;
+    }
+    
+    @Override
+    public void update() {
+        super.update();
+        if (!isDead()) {
+            lifeTime++;
+            movesLeft--;
+        }
+        
+        if (movesLeft == 0)
+            dead = true;
+    }
+    
+    @Override
+    public void grow() {
+        super.grow();
+        //longer snakes can move more than shorter
+        float temp = (screen.getWidth() + screen.getHeight()) * (getParts().size() - 4);
+        movesLeft += (temp < screen.getWidth() * screen.getHeight()) ? temp : screen.getWidth() * screen.getHeight();
+    }
+    
+    //Code-Bullet's calFitness function
+    public void calcFitness() {
+        
+        int len = getParts().size();
+        
+        //fitness is based on length and lifetime
+        if (len < 10) {
+            fitness = lifeTime * lifeTime * len * len;
+        } else {
+            //grows slower after 10 to stop fitness from getting stupidly big
+            //ensure greater than len = 9
+            fitness = lifeTime * lifeTime;
+            fitness *= Math.pow(2, 10);
+            fitness *= (len - 9);
+        }
+    }
+    
+    //Coding train pool selection
+    private Snake poolSelection(List<Snake> prevGen) {
+        // Start at 0
+        int index = 0;
+        
+        // Pick a random number between 0 and 1
+        double random = Math.random();
+        
+        // Keep subtracting probabilities until you get less than zero
+        // Higher probabilities will be more likely to be fixed since they will
+        // subtract a larger number towards zero
+        while (random > 0) {
+            random -= prevGen.get(index).getFitness();
+            // And move on to the next
+            index++;
+        }
+        
+        // Go back one
+        index--;
+        return prevGen.get(index);
+    }
+    
+    public double getFitness() {
+        return fitness;
+    }
+    
+    public void setFitness(double fitness) {
+        this.fitness = fitness;
     }
 }

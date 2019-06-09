@@ -38,7 +38,7 @@ public class Main extends PApplet {
     public void setup() {
         
         gameScreen = new Plane(new PVector(0, 0), new PVector(20, 20), screen);
-        snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, Snake.MovementType.WALLS);
+        snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, Snake.MovementType.WALLS, 100);
         food = new Food(gameScreen, snake);
         initSize = snake.getParts().size();
     }
@@ -47,7 +47,7 @@ public class Main extends PApplet {
     public void draw() {
         
         if (snake.isDead()) {
-            snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, snake.getMovementType());
+            snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, snake.getMovementType(), 100);
             food = new Food(gameScreen, snake);
         }
         
@@ -104,12 +104,12 @@ public class Main extends PApplet {
         } else if ((key == 'm' || key == 'M') && !start) {
             if (snake.getMovementType() == Snake.MovementType.WALLS) {
                 snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
-                        Snake.MovementType.WRAP);
+                        Snake.MovementType.WRAP, 100);
                 
                 food = new Food(gameScreen, snake);
             } else {
                 snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
-                        Snake.MovementType.WRAP);
+                        Snake.MovementType.WALLS, 100);
                 food = new Food(gameScreen, snake);
             }
             score = (snake.getParts().size() - initSize) * 10;

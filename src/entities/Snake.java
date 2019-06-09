@@ -15,11 +15,11 @@ public class Snake {
      */
     protected Plane screen;
     protected PVector dir, nextDir;
+    protected boolean dead;
     private boolean changedDir = false;
     private int size = 4;
     private List<PVector> parts = new ArrayList<>();
     private MovementType movementType;
-    private boolean dead;
     
     public Snake(Plane screen, float posX, float posY, MovementType movementType) {
         

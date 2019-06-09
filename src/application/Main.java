@@ -1,7 +1,7 @@
 package application;
 
 import entities.Food;
-import entities.Snake;
+import entities.ai.Snake;
 import entities.screens.Plane;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -65,6 +65,7 @@ public class Main extends PApplet {
             drawSnake(snake);
             
             if (start) {
+                snake.predict(food);
                 snake.update();
             }
             
@@ -87,15 +88,16 @@ public class Main extends PApplet {
     
     @Override
     public void keyPressed() {
-        if (keyCode == UP || key == 'w') {
-            snake.changeDir(new PVector(0, -1));
-        } else if (keyCode == DOWN || key == 's') {
-            snake.changeDir(new PVector(0, 1));
-        } else if (keyCode == LEFT || key == 'a') {
-            snake.changeDir(new PVector(-1, 0));
-        } else if (keyCode == RIGHT || key == 'd') {
-            snake.changeDir(new PVector(1, 0));
-        } else if (keyCode == ENTER) {
+//        if (keyCode == UP || key == 'w') {
+//            snake.changeDir(new PVector(0, -1));
+//        } else if (keyCode == DOWN || key == 's') {
+//            snake.changeDir(new PVector(0, 1));
+//        } else if (keyCode == LEFT || key == 'a') {
+//            snake.changeDir(new PVector(-1, 0));
+//        } else if (keyCode == RIGHT || key == 'd') {
+//            snake.changeDir(new PVector(1, 0));
+//        } else
+        if (keyCode == ENTER) {
             start = true;
         } else if (key == 'p' || key == 'P') {
             start = false;

@@ -24,7 +24,7 @@ public class Snake extends entities.Snake {
         this.movesLeft = movesLeft;
     }
     
-    public Snake(List<Snake> prevGen, float posX, float posY, int parentNum) {
+    public Snake(List<Snake> prevGen, float posX, float posY, int movesLeft, int parentNum) {
         super(prevGen.get(0).screen, posX, posY, prevGen.get(0).getMovementType());
         
         List<Snake> parents = new ArrayList<>();
@@ -43,14 +43,11 @@ public class Snake extends entities.Snake {
         
         //generates a brain based on the parents's brains
         brain = new GANeuralNetwork(brains);
+        
+        this.movesLeft = movesLeft;
     }
     
     public void predict(Food food) {
-        
-        for (double x : fov(food)) {
-            System.out.println(x);
-        }
-        System.out.println();
         
         double[] prediction = brain.predict(fov(food));
         
@@ -185,6 +182,15 @@ public class Snake extends entities.Snake {
         for (int i = 0; i < dists.length; i++) {
             dists[i] /= norm;
         }
+        
+        /* If the food distance inputs are not zero when the food is not in the direction
+         * It would be the same value if the wall or the food were close to the snake,
+         * same for the body parts
+         */
+        if (!foundFood)
+            dists[1] = 0;
+        if (!foundPart)
+            dists[2] = 0;
         
         return dists;
     }

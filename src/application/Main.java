@@ -6,14 +6,18 @@ import entities.screens.Plane;
 import processing.core.PApplet;
 import processing.core.PVector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main extends PApplet {
     
-    private Snake snake;
-    private Food food;
+    private List<Snake> population = new ArrayList<>();
+    private int populationSize = 300;
+    private List<Food> foods = new ArrayList<>();
     private Plane gameScreen, screen;
     private int initSize;
     private int gameSpeed = 5;
-    private int score, highscore = 0;
+    private int highscore = 0, generation = 1;
     private boolean start = false;
     
     public static void main(String[] args) {
@@ -38,88 +42,86 @@ public class Main extends PApplet {
     public void setup() {
         
         gameScreen = new Plane(new PVector(0, 0), new PVector(20, 20), screen);
-        snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, Snake.MovementType.WALLS, 100);
-        food = new Food(gameScreen, snake);
-        initSize = snake.getParts().size();
+        for (int i = 0; i < populationSize; i++) {
+            population.add(new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
+                    entities.Snake.MovementType.WALLS, 100));
+            foods.add(new Food(gameScreen, population.get(i)));
+        }
+        initSize = population.get(0).getParts().size();
     }
     
     @Override
     public void draw() {
         
-        if (snake.isDead()) {
-            snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, snake.getMovementType(), 100);
-            food = new Food(gameScreen, snake);
+        background(51);
+        
+        //drawing the text gap between the top and the playable screen
+        noStroke();
+        fill(0xFF555555);
+        rect(0, 0, screen.getWidth(), screen.getY(0));
+        
+        for (int i = 0; i < populationSize; i++) {
+            foods.get(i).check();
+            drawFood(foods.get(i));
+            drawSnake(population.get(i));
+            int score = population.get(i).getParts().size() - initSize;
+            highscore = (score > highscore) ? score : highscore;
         }
         
-        if (frameCount % gameSpeed == 0) {
-            background(51);
-            
-            //drawing the text gap between the top and the playable screen
-            noStroke();
-            fill(0xFF555555);
-            rect(0, 0, screen.getWidth(), screen.getY(0));
-            
-            
-            food.check();
-            drawFood(food);
-            drawSnake(snake);
-            
-            if (start) {
-                snake.predict(food);
-                snake.update();
+        if (start) {
+            for (int i = 0; i < populationSize; i++) {
+                
+                population.get(i).predict(foods.get(i));
+                population.get(i).update();
             }
-            
-            fill(255);
-            score = (snake.getParts().size() - initSize) * 10;
-            highscore = (score > highscore) ? score : highscore;
-            
-            textSize(20);
-            
-            textAlign(LEFT, TOP);
-            text("Score: " + score, 5, 5);
-            text("HighScore: " + highscore, 5, 30);
-            
-            textAlign(RIGHT, TOP);
-            text("Enter to start/play", width - 5, 5);
-            text("P to pause", width - 5, 30);
-            text("Mode (M) - " + snake.getMovementType(), width - 5, 55);
         }
+        
+        fill(255);
+        textSize(20);
+        
+        textAlign(LEFT, TOP);
+        text("Generation: " + generation, 5, 5);
+        text("HighScore: " + highscore, 5, 30);
+        
+        textAlign(RIGHT, TOP);
+        text("Enter to start/play", width - 5, 5);
+        text("P to pause", width - 5, 30);
+        text("Mode (M) - " + population.get(0).getMovementType(), width - 5, 55);
+        
     }
     
     @Override
     public void keyPressed() {
-//        if (keyCode == UP || key == 'w') {
-//            snake.changeDir(new PVector(0, -1));
-//        } else if (keyCode == DOWN || key == 's') {
-//            snake.changeDir(new PVector(0, 1));
-//        } else if (keyCode == LEFT || key == 'a') {
-//            snake.changeDir(new PVector(-1, 0));
-//        } else if (keyCode == RIGHT || key == 'd') {
-//            snake.changeDir(new PVector(1, 0));
-//        } else
         if (keyCode == ENTER) {
             start = true;
         } else if (key == 'p' || key == 'P') {
             start = false;
         } else if ((key == 'm' || key == 'M') && !start) {
-            if (snake.getMovementType() == Snake.MovementType.WALLS) {
-                snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
-                        Snake.MovementType.WRAP, 100);
+            
+            for (int i = 0; i < populationSize; i++) {
                 
-                food = new Food(gameScreen, snake);
-            } else {
-                snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
-                        Snake.MovementType.WALLS, 100);
-                food = new Food(gameScreen, snake);
+                Snake snake = population.get(i);
+                Food food = foods.get(i);
+                
+                if (snake.getMovementType() == Snake.MovementType.WALLS) {
+                    snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
+                            Snake.MovementType.WRAP, 100);
+                    
+                    food = new Food(gameScreen, snake);
+                } else {
+                    snake = new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
+                            Snake.MovementType.WALLS, 100);
+                    food = new Food(gameScreen, snake);
+                }
+                highscore = 0;
+                
             }
-            score = (snake.getParts().size() - initSize) * 10;
-            highscore = 0;
         }
     }
     
     private void drawSnake(Snake snake) {
         noStroke();
-        fill(255);
+        fill(255, 100);
         
         for (PVector part : snake.getParts()) {
             rect(gameScreen.getX(part.x), gameScreen.getY(part.y), gameScreen.getPixelSize(), gameScreen.getPixelSize());
@@ -128,7 +130,7 @@ public class Main extends PApplet {
     
     private void drawFood(Food food) {
         noStroke();
-        fill(0xFFFF0000);//red
+        fill(0x64FF0000);//red
         rect(gameScreen.getX(food.getPos().x), gameScreen.getY(food.getPos().y),
                 gameScreen.getPixelSize(), gameScreen.getPixelSize());
     }

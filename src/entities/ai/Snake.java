@@ -18,10 +18,10 @@ public class Snake extends entities.Snake {
     
     public Snake(Plane screen, float posX, float posY, MovementType movementType, int movesLeft) {
         super(screen, posX, posY, movementType);
-        brain = new GANeuralNetwork(24, new int[]{16}, 4, 0.1);
+        brain = new GANeuralNetwork(24, new int[]{16}, 4, 0.10);
+        this.movesLeft = movesLeft;
         brain.setActivationFunctionsForHiddenLayer(Function.RELU);
         brain.setActivationFunctionsForOutputLayer(Function.SOFTMAX);
-        this.movesLeft = movesLeft;
     }
     
     public Snake(List<Snake> prevGen, float posX, float posY, int movesLeft, int parentNum) {
@@ -35,7 +35,6 @@ public class Snake extends entities.Snake {
             
             Snake selected = poolSelection(copyPrevGen);
             parents.add(selected);
-            //guarantees that it will select one Snake twice
             copyPrevGen.remove(selected);
         }
         
@@ -43,6 +42,9 @@ public class Snake extends entities.Snake {
         
         //generates a brain based on the parents's brains
         brain = new GANeuralNetwork(brains);
+        
+        brain.setActivationFunctionsForHiddenLayer(Function.RELU);
+        brain.setActivationFunctionsForOutputLayer(Function.SOFTMAX);
         
         this.movesLeft = movesLeft;
     }
@@ -87,49 +89,46 @@ public class Snake extends entities.Snake {
         
         double[] fov = new double[24];
         
-        //Code responsible to rotate the inputs with the snake direction
-        double dirAngle = (dir.heading() < 0) ? Math.PI - dir.heading() : dir.heading();
-        int offset = (int) Math.floor((dirAngle % (2 * Math.PI)) / (Math.PI / 4));
-        
+        //It performed better without rotating the inputs with the head
         double[] temp = lookTo(new PVector(1, 0), food);
-        fov[(offset) % 8] = temp[0];
-        fov[((offset) % 8 + 8)] = temp[1];
-        fov[((offset) % 8 + 16)] = temp[2];
+        fov[0] = temp[0];
+        fov[8] = temp[1];
+        fov[16] = temp[2];
         
         temp = lookTo(new PVector(1, -1), food);
-        fov[(offset + 1) % 8] = temp[0];
-        fov[((offset + 1) % 8 + 8)] = temp[1];
-        fov[((offset + 1) % 8 + 16)] = temp[2];
+        fov[1] = temp[0];
+        fov[9] = temp[1];
+        fov[17] = temp[2];
         
         temp = lookTo(new PVector(0, -1), food);
-        fov[(offset + 2) % 8] = temp[0];
-        fov[((offset + 2) % 8 + 8)] = temp[1];
-        fov[((offset + 2) % 8 + 16)] = temp[2];
+        fov[2] = temp[0];
+        fov[10] = temp[1];
+        fov[18] = temp[2];
         
         temp = lookTo(new PVector(-1, -1), food);
-        fov[(offset + 3) % 8] = temp[0];
-        fov[((offset + 3) % 8 + 8)] = temp[1];
-        fov[((offset + 3) % 8 + 16)] = temp[2];
+        fov[3] = temp[0];
+        fov[11] = temp[1];
+        fov[19] = temp[2];
         
         temp = lookTo(new PVector(-1, 0), food);
-        fov[(offset + 4) % 8] = temp[0];
-        fov[((offset + 4) % 8 + 8)] = temp[1];
-        fov[((offset + 4) % 8 + 16)] = temp[2];
+        fov[4] = temp[0];
+        fov[12] = temp[1];
+        fov[20] = temp[2];
         
         temp = lookTo(new PVector(-1, 1), food);
-        fov[(offset + 5) % 8] = temp[0];
-        fov[((offset + 5) % 8 + 8)] = temp[1];
-        fov[((offset + 5) % 8 + 16)] = temp[2];
+        fov[5] = temp[0];
+        fov[13] = temp[1];
+        fov[21] = temp[2];
         
         temp = lookTo(new PVector(0, 1), food);
-        fov[(offset + 6) % 8] = temp[0];
-        fov[((offset + 6) % 8 + 8)] = temp[1];
-        fov[((offset + 6) % 8 + 16)] = temp[2];
+        fov[6] = temp[0];
+        fov[14] = temp[1];
+        fov[22] = temp[2];
         
         temp = lookTo(new PVector(1, 1), food);
-        fov[(offset + 7) % 8] = temp[0];
-        fov[((offset + 7) % 8 + 8)] = temp[1];
-        fov[((offset + 7) % 8 + 16)] = temp[2];
+        fov[7] = temp[0];
+        fov[15] = temp[1];
+        fov[23] = temp[2];
         
         return fov;
     }
@@ -211,23 +210,22 @@ public class Snake extends entities.Snake {
     public void grow() {
         super.grow();
         //longer snakes can move more than shorter
-        float temp = (screen.getWidth() + screen.getHeight()) * (getParts().size() - 4);
-        movesLeft += (temp < screen.getWidth() * screen.getHeight()) ? temp : screen.getWidth() * screen.getHeight();
+        movesLeft += screen.getWidth() * getParts().size() / 2;
     }
     
-    //Code-Bullet's calFitness function
+    //Code-Bullet's calcFitness function altered
     public void calcFitness() {
         
         int len = getParts().size();
         
         //fitness is based on length and lifetime
         if (len < 10) {
-            fitness = lifeTime * lifeTime * len * len;
+            fitness = Math.pow(lifeTime, 2) * Math.pow(len, 3);
         } else {
             //grows slower after 10 to stop fitness from getting stupidly big
             //ensure greater than len = 9
             fitness = lifeTime * lifeTime;
-            fitness *= Math.pow(2, 10);
+            fitness *= Math.pow(3, 7);
             fitness *= (len - 9);
         }
     }
@@ -243,7 +241,7 @@ public class Snake extends entities.Snake {
         // Keep subtracting probabilities until you get less than zero
         // Higher probabilities will be more likely to be fixed since they will
         // subtract a larger number towards zero
-        while (random > 0) {
+        while (random > 0 && index < prevGen.size()) {
             random -= prevGen.get(index).getFitness();
             // And move on to the next
             index++;

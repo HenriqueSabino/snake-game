@@ -7,18 +7,18 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Main extends PApplet {
     
     private List<Snake> population = new ArrayList<>();
-    private int populationSize = 300;
+    private int populationSize = 2000;
     private List<Food> foods = new ArrayList<>();
     private Plane gameScreen, screen;
     private int initSize;
-    private int gameSpeed = 5;
-    private int highscore = 0, generation = 1;
-    private boolean start = false;
+    private int highscore = 0, genHigh = 0, generation = 1;
+    private boolean start = false, allDead = false;
     
     public static void main(String[] args) {
         
@@ -41,7 +41,7 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         
-        gameScreen = new Plane(new PVector(0, 0), new PVector(20, 20), screen);
+        gameScreen = new Plane(new PVector(0, 0), new PVector(50, 50), screen);
         for (int i = 0; i < populationSize; i++) {
             population.add(new Snake(gameScreen, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2,
                     entities.Snake.MovementType.WALLS, 100));
@@ -53,6 +53,11 @@ public class Main extends PApplet {
     @Override
     public void draw() {
         
+        if (allDead) {
+            repopulate();
+            allDead = false;
+        }
+        
         background(51);
         
         //drawing the text gap between the top and the playable screen
@@ -62,17 +67,24 @@ public class Main extends PApplet {
         
         for (int i = 0; i < populationSize; i++) {
             foods.get(i).check();
-            drawFood(foods.get(i));
-            drawSnake(population.get(i));
+            if (!population.get(i).isDead()) {
+                drawFood(foods.get(i));
+                drawSnake(population.get(i));
+            }
             int score = population.get(i).getParts().size() - initSize;
             highscore = (score > highscore) ? score : highscore;
+            genHigh = (score > genHigh) ? score : genHigh;
         }
         
         if (start) {
             for (int i = 0; i < populationSize; i++) {
-                
                 population.get(i).predict(foods.get(i));
                 population.get(i).update();
+                
+                if (i == 0 && population.get(i).isDead())
+                    allDead = true;
+                else
+                    allDead = allDead && population.get(i).isDead();
             }
         }
         
@@ -81,7 +93,8 @@ public class Main extends PApplet {
         
         textAlign(LEFT, TOP);
         text("Generation: " + generation, 5, 5);
-        text("HighScore: " + highscore, 5, 30);
+        text("GenHighScore: " + genHigh, 5, 30);
+        text("HighScore: " + highscore, 5, 55);
         
         textAlign(RIGHT, TOP);
         text("Enter to start/play", width - 5, 5);
@@ -116,6 +129,35 @@ public class Main extends PApplet {
                 highscore = 0;
                 
             }
+        }
+    }
+    
+    private void repopulate() {
+        
+        List<Snake> newGen = new ArrayList<>();
+        
+        double sum = 0;
+        for (Snake snake : population) {
+            snake.calcFitness();
+            sum += snake.getFitness();
+        }
+        
+        for (Snake snake : population) {
+            snake.setFitness(snake.getFitness() / sum);
+        }
+        
+        population.sort(Comparator.comparingDouble(Snake::getFitness));
+        
+        for (int i = 0; i < populationSize; i++) {
+            newGen.add(new Snake(population, gameScreen.getWidth() / 2, gameScreen.getHeight() / 2, 100, 2));
+        }
+        generation++;
+        genHigh = 0;
+        population = newGen;
+        
+        foods.clear();
+        for (int i = 0; i < populationSize; i++) {
+            foods.add(new Food(gameScreen, population.get(i)));
         }
     }
     

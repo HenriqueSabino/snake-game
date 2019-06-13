@@ -151,36 +151,29 @@ public class Snake extends entities.Snake {
          */
         
         pos.add(dir);
-        
-        for (int i = 0; i < dists.length; i++) {
-            dists[i]++;
-        }
+        dists[0]++;
         
         while (!(pos.x < 0 || pos.x >= screen.getWidth() || pos.y < 0 || pos.y >= screen.getHeight())) {
             
             if (!foundFood && pos.x == food.getPos().x && pos.y == food.getPos().y) {
                 foundFood = true;
+                dists[1]++;
             }
             
             if (!foundPart) {
                 for (PVector part : getParts()) {
                     if (pos.x == part.x && pos.y == part.y) {
                         foundPart = true;
+                        dists[2]++;
                     }
                 }
             }
             
             pos.add(dir);
             dists[0]++;
-            if (!foundFood)
-                dists[1]++;
-            if (!foundPart)
-                dists[2]++;
         }
         
-        for (int i = 0; i < dists.length; i++) {
-            dists[i] /= norm;
-        }
+        dists[0] /= norm;
         
         /* If the food distance inputs are not zero when the food is not in the direction
          * It would be the same value if the wall or the food were close to the snake,
